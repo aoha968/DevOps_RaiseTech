@@ -1,5 +1,0 @@
----
-- name: mysql Install
-  yum:
-    name: mysql
-    state: latest
