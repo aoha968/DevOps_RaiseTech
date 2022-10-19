@@ -1,0 +1,10 @@
+---
+- hosts: ec2
+  become: yes
+  roles:
+    - { role: git, tags: git }
+    - { role: mysql, tags: mysql }
+    - { role: nodejs, tags: nodejs }
+    - { role: ruby, tags: ruby }
+    - { role: nginx, tags: nginx }
+    - { role: setup, tags: setup }
