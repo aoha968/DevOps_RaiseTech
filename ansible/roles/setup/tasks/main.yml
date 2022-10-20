@@ -1,16 +1,14 @@
 ---
-- name: Check if .git file exists.
-  become: yes
-  shell:
-    cmd: ls -l /var/www/raisetech-live8-sample-app/.git
-  register: sourcedir
-  ignore_errors: yes
+- name: check file app.php
+  stat:
+    path: /var/www/raisetech-live8-sample-app/.git
+  register: git
 
 - name: Git clone rails-app
   git:
     repo: https://github.com/aoha968/raisetech-live8-sample-app.git
     dest: /var/www/raisetech-live8-sample-app
-  when: sourcedir != 0
+  when: not git.stat.exists
 
 - name: change authority
   become: yes
