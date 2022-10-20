@@ -1,0 +1,31 @@
+---
+- name: Git clone rails-app
+  git:
+    repo: https://github.com/aoha968/raisetech-live8-sample-app.git
+    dest: /var/www/raisetech-live8-sample-app
+
+- name: change authority
+  shell: bash -lc "sudo chown -R ec2-user ."
+  args:
+    chdir: /var/www/raisetech-live8-sample-app
+
+- name: Install bundle and rails
+  become: yes
+  shell: bash -lc "{{ item }}"
+  with_items:
+    - gem install bundler:2.3.14
+    - bundle install
+  args:
+    chdir: /var/www/raisetech-live8-sample-app
+
+- name: Prepare DB and webpacker and start server
+  shell: bash -lc "{{ item }}"
+  with_items:
+    - rails db:create
+    - rails db:migrate
+    - yes | rails webpacker:install
+    - rails webpacker:compile
+    - bundle exec unicorn_rails -c config/unicorn.rb -D
+    - sudo systemctl start nginx.service
+  args:
+    chdir: /var/www/raisetech-live8-sample-app

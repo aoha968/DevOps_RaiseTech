@@ -1,26 +1,90 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+orbs:
+  terraform: circleci/terraform@3.1.0
+  terraform-tflint: hqo/terraform@1.0.3
+  ansible: orbss/ansible-playbook@0.0.5
+  aws-cli: circleci/aws-cli@3.1.3
+  ruby: circleci/ruby@1.8.0
+
+commands:
+  install-tflint:
+    description: "Install TFLint"
+    steps:
+      - run:
+          command: wget -P /tmp https://github.com/terraform-linters/tflint/releases/download/v0.38.1/tflint_linux_amd64.zip && unzip /tmp/tflint_linux_amd64.zip -d /usr/local/bin
+
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+  check_by_tflint:
+    executor: terraform/default
+    steps:
+      - checkout
+      - install-tflint
+      - run:
+          name: tflint
+          command: |
+            cd terraform/dev && terraform init
+            tflint --init && tflint
+  setup-by-ansible:
+    executor: ansible/default
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - b6:f6:a6:f1:a6:5e:77:68:2a:49:20:39:19:78:99:3c
+      - ansible/install:
+          version: 2.10.3
+      - ansible/playbook:
+          playbook: ansible/playbook.yml
+          playbook-options: "-u ec2-user -i ansible/inventory --private-key ~/.ssh/Ansible.pem"
+  serverspec:
+    executor: ruby/default
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
-
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+          name: set
+          command: |
+            gem install bundler
+            gem install serverspec
+            gem install rake
+            echo ${KEY_FINGERPRINT} > ~/.ssh/serverspec.pem
+            mv spec/config ~/.ssh/
+            rake spec
 workflows:
-  say-hello-workflow:
+  deploy_infrastructure:
     jobs:
-      - say-hello
+      - terraform/fmt:
+          checkout: true
+          context: terraform
+          path: terraform/dev
+      - terraform/validate:
+          checkout: true
+          context: terraform
+          path: terraform/dev
+          requires:
+            - terraform/fmt
+      - check_by_tflint:
+          requires:
+            - terraform/validate
+      - terraform/plan:
+          checkout: true
+          context: terraform
+          path: terraform/dev
+          persist-workspace: true
+          requires:
+            - check_by_tflint
+      - terraform/apply:
+          attach-workspace: true
+          context: terraform
+          path: terraform/dev
+          filters:
+            branches:
+              only: main
+          requires:
+            - terraform/plan
+      - setup-by-ansible:
+          requires:
+            - terraform/apply
+      - serverspec:
+          requires:
+            - setup-by-ansible
