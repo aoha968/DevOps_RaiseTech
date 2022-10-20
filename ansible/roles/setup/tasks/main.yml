@@ -1,8 +1,16 @@
 ---
+- name: Check if .git file exists.
+  become: yes
+  shell:
+    cmd: ls -l /opt/testuser/source/.git
+  register: sourcedir
+  ignore_errors: yes
+
 - name: Git clone rails-app
   git:
     repo: https://github.com/aoha968/raisetech-live8-sample-app.git
     dest: /var/www/raisetech-live8-sample-app
+  when: sourcedir != 0
 
 - name: change authority
   become: yes
