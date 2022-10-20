@@ -22,7 +22,7 @@ resource "aws_instance" "ec2" {
 
 resource "aws_eip_association" "eip_assoc"{
   instance_id = aws_instance.ec2.id
-  public_ip   = "13.230.244.252"
+  public_ip   = "18.176.163.255"
 }
 
 resource "aws_security_group" "ec2_sg" {
