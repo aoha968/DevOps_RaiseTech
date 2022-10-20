@@ -2,7 +2,7 @@ require 'spec_helper'
 
 db_user = "admin"
 db_password = "password"
-db_host = "terraform-db-instance.cw7z47h4qfvy.ap-northeast-1.rds.amazonaws.com"
+db_host = "terraform-db-instance.c7ebcdldpjme.ap-northeast-1.rds.amazonaws.com"
 db_name = "raisetech_live8_sample_app_development"
 
 #3000番ポートが空いているか
@@ -11,7 +11,7 @@ describe port(3000) do
 end
 
 #ステータスが200で返ってくるか
-describe command('curl http://13.230.244.252:3000 -o /dev/null -w "%{http_code}\n" -s') do
+describe command('curl http://13.112.172.57:3000 -o /dev/null -w "%{http_code}\n" -s') do
   its(:stdout) { should match /^200$/ }
 end
 
