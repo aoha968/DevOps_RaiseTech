@@ -31,7 +31,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - b6:f6:a6:f1:a6:5e:77:68:2a:49:20:39:19:78:99:3c
+            - b6:f6:a6:f1:a6:5e:77:68:2a:49:20:39:19:78:99:3c       # CicleCIのAdditional SSH Keysで登録した時にfingerprints
       - ansible/install:
           version: 2.10.3
       - ansible/playbook:

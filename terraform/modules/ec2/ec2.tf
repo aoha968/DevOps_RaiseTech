@@ -22,7 +22,7 @@ resource "aws_instance" "ec2" {
 
 resource "aws_eip_association" "eip_assoc"{
   instance_id = aws_instance.ec2.id
-  public_ip   = "13.112.172.57"
+  public_ip   = "13.112.172.57"             # あらかじめEIPを取得する。そのパブリックIPアドレス
 }
 
 resource "aws_security_group" "ec2_sg" {
