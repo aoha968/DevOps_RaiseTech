@@ -5,6 +5,7 @@
     dest: /var/www/raisetech-live8-sample-app
 
 - name: change authority
+  become: yes
   shell: bash -lc "sudo chown -R ec2-user ."
   args:
     chdir: /var/www/raisetech-live8-sample-app
