@@ -2,7 +2,7 @@
 - name: Check if .git file exists.
   become: yes
   shell:
-    cmd: ls -l /opt/testuser/source/.git
+    cmd: ls -l /var/www/raisetech-live8-sample-app/.git
   register: sourcedir
   ignore_errors: yes
 
