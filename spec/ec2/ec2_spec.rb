@@ -84,11 +84,10 @@ end
 # Rails Applicationを格納しているディレクトリのパスの確認
 # 所有者とグループがec2-userであるかの確認
 # -------------------------------------------------------------------------#
-# describe file('/var/www/raisetech-live8-sample-app') do
-#   it { should be_directory }
-#   it { should be_owned_by 'ec2-user' }
-#   it { should be_grouped_into 'ec2-user'}
-# end
+describe file('/var/www/raisetech-live8-sample-app') do
+  it { should be_directory }
+  it { should be_owned_by 'ec2-user' }
+end
 
 # -------------------------------------------------------------------------#
 # ImageMagickがインストールされているか
