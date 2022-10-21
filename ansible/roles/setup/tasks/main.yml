@@ -4,7 +4,7 @@
     path: /var/www/raisetech-live8-sample-app/.git
   register: git
 
-- name: Git Delete
+- name: Git Clone Delete
   become: yes
   shell: bash -lc "{{ item }}"
   with_items:
