@@ -4,11 +4,19 @@
     path: /var/www/raisetech-live8-sample-app/.git
   register: git
 
+- name: Git Delete
+  become: yes
+  shell: bash -lc "{{ item }}"
+  with_items:
+    - sudo rm -rf raisetech-live8-sample-app
+  args:
+    chdir: /var/www
+  when: git.stat.exists
+
 - name: Git clone rails-app
   git:
     repo: https://github.com/aoha968/raisetech-live8-sample-app.git
     dest: /var/www/raisetech-live8-sample-app
-  when: not git.stat.exists
 
 - name: change authority
   become: yes
@@ -28,12 +36,11 @@
 - name: Prepare DB and webpacker and start server
   shell: bash -lc "{{ item }}"
   with_items:
-    #    - rails db:create
-    #    - rails db:migrate
-    - rake db:migrate:reset
+    - rails db:create
+    - rails db:migrate
     - yes | rails webpacker:install
     - rails webpacker:compile
-    #    - bundle exec unicorn_rails -c config/unicorn.rb -D
+    - bundle exec unicorn_rails -c config/unicorn.rb -D
     - sudo systemctl start nginx.service
   args:
     chdir: /var/www/raisetech-live8-sample-app
