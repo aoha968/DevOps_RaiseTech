@@ -1,10 +1,5 @@
 # -------------------------------------------------------------------------#
 # 変数定義
-# -------------------------------------------------------------------------# 
-locals {
-  subnet_num = 2
-}
-
 variable "cidr_block" {
   default = "10.0.0.0/16"
 }
@@ -26,22 +21,26 @@ resource "aws_vpc" "vpc" {
 # Subnet Create
 # -------------------------------------------------------------------------# 
 resource "aws_subnet" "subnets_a" {
-  vpc_id                  = aws_vpc.vpc.id                                                  # VPC ID
-  cidr_block              = cidrsubnet(aws_vpc.vpc.cidr_block, 8, local.subnet_num.index)   # サブネットの CIDR ブロック
-  availability_zone       = "ap-northeast-1a"                                               # サブネットが存在する必要があるアベイラビリティーゾーン
-  map_public_ip_on_launch = true                                                            # インスタンスの起動時にパブリック IP アドレスが割り当てられるかどうか
+  count = 2
+
+  vpc_id                  = aws_vpc.vpc.id                                         # VPC ID
+  cidr_block              = cidrsubnet(aws_vpc.vpc.cidr_block, 8, count.index)     # サブネットの CIDR ブロック
+  availability_zone       = "ap-northeast-1a"                                      # サブネットが存在する必要があるアベイラビリティーゾーン
+  map_public_ip_on_launch = true                                                   # インスタンスの起動時にパブリック IP アドレスが割り当てられるかどうか
   tags = {
-    Name = "tf-subnet-a${local.subnet_num.index}"
+    Name = "tf-subnet-a${count.index}"
   }
 }
 
 resource "aws_subnet" "subnets_c" {
-  vpc_id                  = aws_vpc.vpc.id                                                                    # VPC ID
-  cidr_block              = cidrsubnet(aws_vpc.vpc.cidr_block, 8, local.subnet_num.index + local.subnet_num)  # サブネットの CIDR ブロック
-  availability_zone       = "ap-northeast-1c"                                                                 # サブネットが存在する必要があるアベイラビリティーゾーン
-  map_public_ip_on_launch = true                                                                              # インスタンスの起動時にパブリック IP アドレスが割り当てられるかどうか
+  count = 2
+
+  vpc_id                  = aws_vpc.vpc.id                                          # VPC ID
+  cidr_block              = cidrsubnet(aws_vpc.vpc.cidr_block, 8, count.index + 2)  # サブネットの CIDR ブロック
+  availability_zone       = "ap-northeast-1c"                                       # サブネットが存在する必要があるアベイラビリティーゾーン
+  map_public_ip_on_launch = true                                                    # インスタンスの起動時にパブリック IP アドレスが割り当てられるかどうか
   tags = {
-    Name = "tf-subnet-c${local.subnet_num.index + local.subnet_num}"
+    Name = "tf-subnet-c${count.index + 2}"
   }
 }
 
