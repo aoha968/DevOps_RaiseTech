@@ -6,10 +6,13 @@ db_host = "terraform-db-instance.c7ebcdldpjme.ap-northeast-1.rds.amazonaws.com"
 db_name = "raisetech_live8_sample_app_development"
 
 # -------------------------------------------------------------------------#
-# ポートチェック(3000番ポートがOpenされているか)
+# ポートチェック
 # -------------------------------------------------------------------------#
-describe port(3000) do
-  it { should be_listening }
+listen_ports = [22, 80, 3000]
+listen_ports.each do |listen_port|
+  describe port(listen_port) do
+    it { should be_listening }
+  end
 end
 
 #ステータスが200で返ってくるか
@@ -75,4 +78,21 @@ end
 # -------------------------------------------------------------------------#
 describe file('/var/www/raisetech-live8-sample-app/tmp/sockets/unicorn.sock') do
   it { should be_socket }
+end
+
+# -------------------------------------------------------------------------#
+# Rails Applicationを格納しているディレクトリのパスの確認
+# 所有者とグループがec2-userであるかの確認
+# -------------------------------------------------------------------------#
+describe file('/var/www/raisetech-live8-sample-app') do
+  it { should be_directory }
+  it { should be_owned_by 'ec2-user' }
+  it { should be_grouped_into 'ec2-user'}
+end
+
+# -------------------------------------------------------------------------#
+# ImageMagickがインストールされているか
+# -------------------------------------------------------------------------#
+describe command('convert --version') do
+  its(:exit_status) { should eq 0 }
 end
