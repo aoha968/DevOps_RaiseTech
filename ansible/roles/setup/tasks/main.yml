@@ -32,7 +32,9 @@
 # -------------------------------------------------------------------------#
 - name: Change Ownership
   become: yes
-  shell: bash -lc "sudo chown -hR ec2-user /var"
+  shell: bash -lc "sudo chown -R ec2-user ."
+  args:
+    chdir: /var/www/raisetech-live8-sample-app
 
 # -------------------------------------------------------------------------#
 # 5. Rails Setup (Gem/Bundle Install)
