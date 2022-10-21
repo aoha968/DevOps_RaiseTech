@@ -1,9 +1,15 @@
 ---
-- name: check file app.php
+# -------------------------------------------------------------------------#
+# 1. 冪等性を担保するために.gitがあるかを確認する
+# -------------------------------------------------------------------------#
+- name: Check File .git
   stat:
     path: /var/www/raisetech-live8-sample-app/.git
   register: git
 
+# -------------------------------------------------------------------------#
+# 2. .gitがある = Clone されている。最新であることの保証がないため、一旦削除する
+# -------------------------------------------------------------------------#
 - name: Git Clone Delete
   become: yes
   shell: bash -lc "{{ item }}"
@@ -13,18 +19,27 @@
     chdir: /var/www
   when: git.stat.exists
 
+# -------------------------------------------------------------------------#
+# 3. Clone = 最新のアプリケーションを取得
+# -------------------------------------------------------------------------#
 - name: Git clone rails-app
   git:
     repo: https://github.com/aoha968/raisetech-live8-sample-app.git
     dest: /var/www/raisetech-live8-sample-app
 
-- name: change authority
+# -------------------------------------------------------------------------#
+# 4. ディレクトリ、ファイルの所有者を変更(Read/Write/Execute権限を持たせる)
+# -------------------------------------------------------------------------#
+- name: Change Ownership
   become: yes
   shell: bash -lc "sudo chown -R ec2-user ."
   args:
     chdir: /var/www/raisetech-live8-sample-app
 
-- name: Install bundle and rails
+# -------------------------------------------------------------------------#
+# 5. Rails Setup (Gem/Bundle Install)
+# -------------------------------------------------------------------------#
+- name: Rails Setup
   become: yes
   shell: bash -lc "{{ item }}"
   with_items:
@@ -33,7 +48,10 @@
   args:
     chdir: /var/www/raisetech-live8-sample-app
 
-- name: Prepare DB and webpacker and start server
+# -------------------------------------------------------------------------#
+# 6. Other Setttings
+# -------------------------------------------------------------------------#
+- name: Other Settings
   shell: bash -lc "{{ item }}"
   with_items:
     - rails db:create

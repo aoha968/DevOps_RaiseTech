@@ -1,5 +1,9 @@
 version: 2.1
 
+# -------------------------------------------------------------------------#
+# Orbは、再利用可能なコード スニペットです。
+# 再利用可能な1行のコードに、コマンド、Executors、ジョブを凝縮することができます
+# -------------------------------------------------------------------------#
 orbs:
   terraform: circleci/terraform@3.1.0
   terraform-tflint: hqo/terraform@1.0.3
@@ -7,6 +11,10 @@ orbs:
   aws-cli: circleci/aws-cli@3.1.3
   ruby: circleci/ruby@1.8.0
 
+# -------------------------------------------------------------------------#
+# TFLintをインストール
+# TerraformのためのLinterで構文チェックツール
+# -------------------------------------------------------------------------#
 commands:
   install-tflint:
     description: "Install TFLint"
@@ -15,6 +23,9 @@ commands:
           command: wget -P /tmp https://github.com/terraform-linters/tflint/releases/download/v0.38.1/tflint_linux_amd64.zip && unzip /tmp/tflint_linux_amd64.zip -d /usr/local/bin
 
 jobs:
+  # -------------------------------------------------------------------------#
+  # Terraformを使用するために初期化＆構文チェック
+  # -------------------------------------------------------------------------#
   check_by_tflint:
     executor: terraform/default
     steps:
@@ -25,18 +36,24 @@ jobs:
           command: |
             cd terraform/dev && terraform init
             tflint --init && tflint
+  # -------------------------------------------------------------------------#
+  # Ansibleを使用するための準備
+  # -------------------------------------------------------------------------#
   setup-by-ansible:
     executor: ansible/default
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - b6:f6:a6:f1:a6:5e:77:68:2a:49:20:39:19:78:99:3c       # CicleCIのAdditional SSH Keysで登録した時にfingerprints
+            - b6:f6:a6:f1:a6:5e:77:68:2a:49:20:39:19:78:99:3c # CicleCIのAdditional SSH Keysで登録した時にfingerprints
       - ansible/install:
           version: 2.10.3
       - ansible/playbook:
           playbook: ansible/playbook.yml
           playbook-options: "-u ec2-user -i ansible/inventory --private-key ~/.ssh/Ansible.pem"
+  # -------------------------------------------------------------------------#
+  # ServerSpecを使用するための準備
+  # -------------------------------------------------------------------------#
   serverspec:
     executor: ruby/default
     steps:
@@ -53,16 +70,25 @@ jobs:
 workflows:
   deploy_infrastructure:
     jobs:
+      # -------------------------------------------------------------------------#
+      # terraformをフォーマット化(HCLファイル形式)
+      # -------------------------------------------------------------------------#
       - terraform/fmt:
           checkout: true
           context: terraform
           path: terraform/dev
+      # -------------------------------------------------------------------------#
+      # terraformディレクトリ内の構成ファイルを検証
+      # -------------------------------------------------------------------------#
       - terraform/validate:
           checkout: true
           context: terraform
           path: terraform/dev
           requires:
             - terraform/fmt
+      # -------------------------------------------------------------------------#
+      # terraformの構文&定義チェック
+      # -------------------------------------------------------------------------#
       - check_by_tflint:
           requires:
             - terraform/validate
@@ -82,9 +108,15 @@ workflows:
               only: main
           requires:
             - terraform/plan
+      # -------------------------------------------------------------------------#
+      # terraformを適用
+      # -------------------------------------------------------------------------#
       - setup-by-ansible:
           requires:
             - terraform/apply
+      # -------------------------------------------------------------------------#
+      # Ansibleを実行
+      # -------------------------------------------------------------------------#
       - serverspec:
           requires:
             - setup-by-ansible
