@@ -8,7 +8,7 @@ db_name = "raisetech_live8_sample_app_development"
 # -------------------------------------------------------------------------#
 # ポートチェック
 # -------------------------------------------------------------------------#
-listen_ports = [22, 80, 3000]
+listen_ports = [22, 3000]
 listen_ports.each do |listen_port|
   describe port(listen_port) do
     it { should be_listening }
