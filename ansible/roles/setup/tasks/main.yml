@@ -32,7 +32,7 @@
 # -------------------------------------------------------------------------#
 - name: Change Ownership
   become: yes
-  shell: bash -lc "sudo chown -R ec2-user ."
+  shell: bash -lc "sudo chown -R ec2-user:ec2-user ."
   args:
     chdir: /var/www/raisetech-live8-sample-app
 

@@ -87,6 +87,7 @@ end
 describe file('/var/www/raisetech-live8-sample-app') do
   it { should be_directory }
   it { should be_owned_by 'ec2-user' }
+  it { should be_grouped_into 'ec2-user'}
 end
 
 # -------------------------------------------------------------------------#
